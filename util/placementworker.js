@@ -245,7 +245,8 @@ function PlacementWorker(binPolygon, paths, ids, rotations, config, nfpCache){
 						}
 						
 						var rectbounds = GeometryUtil.getPolygonBounds(allpoints);
-						
+
+						//TODO alternative https://github.com/Jack000/SVGnest/issues/76
 						// weigh width more, to help compress in direction of gravity
 						area = rectbounds.width*2 + rectbounds.height;
 						
