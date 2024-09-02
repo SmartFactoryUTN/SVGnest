@@ -17,7 +17,7 @@
     "winston": "^3.14.2"
   },
   "devDependencies": {
-    "@sparticuz/chromium": "^126.0.0",
+    "@sparticuz/chromium": "^123.0.0",
     "serverless": "^3.27.0"
   }
 }
