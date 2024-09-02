@@ -12,6 +12,7 @@
     "test": "test/node_modules/.bin/sls invoke --function chromium-test --log"
   },
   "dependencies": {
+    "aws-sdk": "^2.1682.0",
     "puppeteer-core": "^19.6.3",
     "winston": "^3.14.2"
   },

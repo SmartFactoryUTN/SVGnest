@@ -4,6 +4,24 @@ const path = require('path');
 const fs = require('fs');
 const winston = require('winston');
 const os = require("os");
+const AWS = require('aws-sdk');
+const {randomUUID} = require("crypto");
+
+const config = {
+    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID || "dummy_key",
+    secretAccessKey: process.env.AWS_S3_ACCESS_KEY_SECRET || "dummy_secret",
+    region: process.env.AWS_S3_BUCKET_REGION || "us-east-2",
+    bucketName: process.env.AWS_S3_BUCKET_NAME || "servicio-de-tizada",
+    nestingServiceHost: process.env.NESTING_SERVICE_HOST || "https://svg-nest.netlify.app/",
+}
+
+// Configure AWS SDK
+AWS.config.update({
+    accessKeyId: config.accessKeyId,
+    secretAccessKey: config.secretAccessKey,
+    region: config.region,
+});
+
 
 exports.handler = async (event, context, callback) => {
 
@@ -15,7 +33,6 @@ exports.handler = async (event, context, callback) => {
         ],
     });
     logger.defaultMeta = {requestId: context.awsRequestId};
-    logger.info("Dummy message");
 
     let browser = null;
     let output = null;
@@ -84,6 +101,14 @@ exports.handler = async (event, context, callback) => {
         logger.info("Chromium:", await browser.version());
         logger.info("Page Title:", await page.title());
         logger.info("SVG Output:", output);
+
+        uploadSVGToS3(config.bucketName, output)
+            .then(data => {
+                console.log(`File uploaded successfully. ${data.Location}`);
+            })
+            .catch(err => {
+                console.error(`Failed to upload file: ${err.message}`);
+            });
 
     } catch (error) {
         logger.info("Error message");
@@ -232,3 +257,27 @@ async function waitForValueChange(page, selectors, iterationCount, timeout, effi
         }))
     }, selectors, iterationCount, timeout, efficiency))
 }
+
+const uploadSVGToS3 = (bucketName, svgOutput) => {
+
+    const s3 = new AWS.S3({apiVersion: "2006-03-01"});
+    const keyPrefix = 'result/' + randomUUID() + '/'; // Optional: specify a folder in the bucket
+
+    const tmpPath = path.join('/tmp', '/tizada');
+    fs.mkdirSync(tmpPath, {recursive: true});
+    fs.writeFileSync(path.join(tmpPath, 'result.svg'), svgOutput, 'utf-8');
+
+    const filePath = path.join(tmpPath, 'result.svg');
+
+    const fileName = path.basename(filePath);
+    const fileContent = fs.readFileSync(filePath);
+
+    const params = {
+        Bucket: bucketName,
+        Key: keyPrefix + fileName,
+        Body: fileContent,
+        ContentType: 'image/svg+xml'
+    };
+
+    return s3.upload(params).promise();
+};
