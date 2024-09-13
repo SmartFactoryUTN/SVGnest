@@ -4,11 +4,11 @@ const AWS = require('aws-sdk');
 const {randomUUID} = require('crypto'); //Crypto is part of Node.js runtime since v14.17
 
 const config = {
-    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID || "dummy_key",
-    secretAccessKey: process.env.AWS_S3_ACCESS_KEY_SECRET || "dummy_secret",
+    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID || "dummy",
+    secretAccessKey: process.env.AWS_S3_ACCESS_KEY_SECRET || "dummy",
     region: process.env.AWS_S3_BUCKET_REGION || "us-east-2",
     bucketName: process.env.AWS_S3_BUCKET_NAME || "servicio-de-tizada",
-    nestingServiceHost: process.env.NESTING_SERVICE_HOST || "https://svg-nest.netlify.app/",
+    nestingServiceHost: process.env.NESTING_SERVICE_HOST || "dummy",
 }
 
 // Configure AWS SDK
