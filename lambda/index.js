@@ -25,6 +25,9 @@ AWS.config.update({
 
 exports.handler = async (event, context, callback) => {
 
+    console.log(`Lambda triggered!!!\n`);
+    console.log("EVENT: \n" + JSON.stringify(event, null, 2));
+
     const logger = winston.createLogger({
         level: process.env.LOG_LEVEL || 'info',
         format: winston.format.json(),
