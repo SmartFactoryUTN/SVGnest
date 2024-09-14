@@ -1,0 +1,19 @@
+{
+  "user": "8fefd092-ec5b-436e-826e-c0ed0ca4be3b",
+  "parts": [
+    {
+      "uuid": "638b2c91-15a1-4d36-bb8f-aa349d840c9f",
+      "quantity": 10
+    }
+  ],
+  "bin": {
+    "uuid": "638b2c91-15a1-4d36-bb8f-aa349d840c9f",
+    "quantity": 1
+  },
+  "configuration": {
+    "maxIterations": 100,
+    "materialUtilization": 10,
+    "timeout": 900000
+  }
+}
+
