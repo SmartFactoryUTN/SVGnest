@@ -52,7 +52,7 @@ exports.handler = async (event, context, callback) => {
             efficiency,
             selectors,
             tmpPath
-        } = initialSetup();
+        } = await initialSetup(event);
         logger.info("After setup");
 
         logger.info("Before browser");
@@ -70,7 +70,7 @@ exports.handler = async (event, context, callback) => {
         page.setDefaultNavigationTimeout(12000000);
 
         logger.info("New page");
-        await page.goto('https://svg-nest.netlify.app/');
+        await page.goto(config.nestingServiceHost);
 
         page.on('console', msg => logger.info('PAGE LOG', {data: msg.text()}));
 
@@ -123,9 +123,83 @@ exports.handler = async (event, context, callback) => {
     return output;
 }
 
-function initialSetup() {
+async function buildSVGPart(userIdentifier, parts, fileName) {
+    const svgFiles = parts.map(part => {
+        return {
+            bucket: process.env.AWS_S3_BUCKET_NAME || "servicio-de-tizada",
+            key: `${userIdentifier}/${part.uuid}.svg`,
+            count: part.quantity
+        };
+    });
 
-    console.time('Execution Time');
+    return await combineSvgs(svgFiles, fileName).catch((error) => {
+        console.error('Failed to combine SVGs:', error.message);
+    });
+
+}
+
+// Function to extract the inner content of an SVG file
+function getInnerSvgContent(svgContent) {
+    // Remove the outer <svg> tags
+    return svgContent.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '');
+}
+
+// Function to fetch an SVG file from AWS S3
+async function fetchSvgFromS3(bucket, key) {
+
+    // Configure the AWS SDK
+    const s3 = new AWS.S3(config);
+
+    try {
+        const params = {
+            Bucket: bucket,
+            Key: key,
+        };
+        const data = await s3.getObject(params).promise();
+        return data.Body.toString('utf-8'); // Convert the file content to a string
+    } catch (error) {
+        console.error(`Failed to fetch SVG from S3: ${error.message}`);
+        throw error;
+    }
+}
+
+async function combineSvgs(svgFiles, fileName) {
+    let combinedSvgContent = '';
+
+    for (const svgFile of svgFiles) {
+        try {
+            const svgContent = await fetchSvgFromS3(svgFile.bucket, svgFile.key);
+            const innerContent = getInnerSvgContent(svgContent);
+
+            // Repeat the SVG content based on the count
+            for (let i = 0; i < svgFile.count; i++) {
+                combinedSvgContent += innerContent + '\n'; // Append and add newline for separation
+            }
+        } catch (error) {
+            console.error(`Error fetching or processing SVG from S3 bucket: ${svgFile.bucket}`);
+        }
+    }
+
+    // Create the combined SVG content with one root <svg> element
+    const outputSvgContent = `
+    <svg xmlns="http://www.w3.org/2000/svg">
+        ${combinedSvgContent}
+    </svg>
+    `;
+
+    // Path to the output combined SVG file
+    const outputFilePath = path.join('/tmp/tizada', fileName);
+
+    // Write the combined content to a new SVG file
+    fs.writeFileSync(outputFilePath, outputSvgContent, 'utf-8');
+
+    console.log(`Combined SVG saved to: ${outputFilePath}`);
+
+    return outputFilePath;
+}
+
+async function initialSetup(event) {
+
     let initialCpuUsage = process.cpuUsage();
     let initialMemoryUsage = process.memoryUsage();
     let startTime = performance.now();
@@ -138,11 +212,12 @@ function initialSetup() {
             }`
 
     const jsonObject = JSON.parse(jsonString);
-    const svgBin = jsonObject.svgBin;
-    const svgParts = jsonObject.svgParts;
-    const iterationCount = jsonObject.iterationCount;
-    const timeout = jsonObject.timeout;
-    const efficiency = jsonObject.efficiency;
+
+    const svgBin = await buildSVGPart(event.body.user, [event.body.bin]) || jsonObject.svgBin;
+    const svgParts = await buildSVGPart(event.body.user, event.body.parts) || jsonObject.svgParts;
+    const {maxIterations, materialUtilization, timeout} = event.body.configuration;
+    const iterationCount = maxIterations || jsonObject.iterationCount;
+    const efficiency = materialUtilization || jsonObject.efficiency;
 
     const selectors = {
         info_iterations: "#info_iterations",
