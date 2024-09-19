@@ -1,0 +1,10 @@
+docker-compose.yml
+Dockerfile
+*.svg
+LICENSE.txt
+readme.md
+*.csv
+lambda
+lambda/*
+.idea
+.idea/*
