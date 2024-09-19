@@ -130,6 +130,7 @@
 		// displayCallback is called when a new placement has been made
 		this.start = function(progressCallback, displayCallback){						
 			if(!svg || !bin){
+				console.log("No svg or no bin");
 				return false;
 			}
 			
@@ -165,6 +166,7 @@
 			binPolygon = this.cleanPolygon(binPolygon);
 						
 			if(!binPolygon || binPolygon.length < 3){
+				console.log("No binPolygon or length < 3");
 				return false;
 			}
 			
@@ -238,6 +240,8 @@
 				
 				progressCallback(progress);
 			}, 100);
+
+			return true;
 		}
 		
 		this.launchWorkers = function(tree, binPolygon, config, progressCallback, displayCallback){

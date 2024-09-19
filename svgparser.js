@@ -769,6 +769,8 @@
 				}
 				
 			break;
+			default:
+				console.log(`Could not polygonify ${element.tagName}`);
 		}
 		
 		// do not include last point if coincident with starting point
