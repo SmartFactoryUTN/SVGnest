@@ -148,7 +148,11 @@
 				document.removeEventListener('dragleave', FileDragHover, false);
 				document.removeEventListener('drop', FileDrop, false);
 				
-				SvgNest.start(progress, renderSvg);
+				if (SvgNest.start(progress, renderSvg)){
+					console.log("Nesting started");
+				}else{
+					console.log("Nest did not start");
+				}
 				startlabel.innerHTML = 'Stop Nest';
 				start.className = 'button spinner';
 				configbutton.className = 'button config disabled';
@@ -269,11 +273,13 @@
 			}
 
 			bininput.onchange = function (e) {
+				console.log("Bininput onchange");
 				var file = e.target.files[0];
 				if (!file) {
 					return;
 				}
 				if (!file.type || (file.type.search('svg') < 0 && file.type.search('xml') < 0 && file.type.search('text') < 0)) {
+					console.log("Bin upload failed");
 					return
 				}
 				var reader = new FileReader();
@@ -288,7 +294,7 @@
 						var parsedSvg = SvgParser.load(reader.result);
 						SvgParser.clean();
 						window.SvgNest.setbin(parsedSvg.childNodes[0]);
-						console.log('bin successfully loaded');
+						console.log(`bin successfully loaded: ${JSON.stringify(parsedSvg.childNodes)}`);
 
 						start.className = 'button start animated bounce';
 						message.className = '';

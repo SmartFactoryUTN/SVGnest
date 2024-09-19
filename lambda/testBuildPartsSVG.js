@@ -10,10 +10,17 @@ const s3 = new AWS.S3({
     bucketName: process.env.AWS_S3_BUCKET_NAME || "dummy",
 });
 
-// Function to extract the inner content of an SVG file
-function getInnerSvgContent(svgContent) {
-    // Remove the outer <svg> tags
-    return svgContent.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '');
+// Function to extract the inner content of an SVG file and sanitize IDs
+function sanitizeSvgContent(svgContent, uniquePrefix) {
+    let sanitizedContent = svgContent
+        .replace(/<\?xml[^>]+\?>/g, '') // Remove XML declaration
+        .replace(/<svg[^>]*>/, '') // Remove opening <svg> tag
+        .replace(/<\/svg>/, ''); // Remove closing </svg> tag
+
+    sanitizedContent = sanitizedContent.replace(/id="([^"]+)"/g, `id="${uniquePrefix}-$1"`);
+    sanitizedContent = sanitizedContent.replace(/href="#([^"]+)"/g, `href="#${uniquePrefix}-$1"`); // Update hrefs
+
+    return sanitizedContent;
 }
 
 // Function to fetch an SVG file from AWS S3
@@ -41,15 +48,30 @@ const svgFiles = [
 // Fetch SVG files, repeat them based on count, and combine
 async function combineSvgs() {
     let combinedSvgContent = '';
+    let currentX = 0; // Initial x-coordinate
+    let currentY = 0; // Initial y-coordinate
+    const spacingX = 1500; // Horizontal spacing between SVGs
+    const spacingY = 500; // Vertical spacing between SVGs
 
-    for (const svgFile of svgFiles) {
+    for (const [index, svgFile] of svgFiles.entries()) {
         try {
             const svgContent = await fetchSvgFromS3(svgFile.bucket, svgFile.key);
-            const innerContent = getInnerSvgContent(svgContent);
+            const uniquePrefix = `file${index + 1}`;
+            const sanitizedContent = sanitizeSvgContent(svgContent, uniquePrefix);
 
             // Repeat the SVG content based on the count
             for (let i = 0; i < svgFile.count; i++) {
-                combinedSvgContent += innerContent + '\n'; // Append and add newline for separation
+                combinedSvgContent += `
+                <g transform="translate(${currentX}, ${currentY})">
+                    ${sanitizedContent}
+                </g>\n`;
+
+                // Update position for the next SVG
+                currentX += spacingX;
+                if (currentX > 500) { // Move to next row after certain width
+                    currentX = 0;
+                    currentY += spacingY;
+                }
             }
         } catch (error) {
             console.error(`Error fetching or processing SVG from S3 bucket: ${svgFile.bucket}`);
@@ -58,7 +80,7 @@ async function combineSvgs() {
 
     // Create the combined SVG content with one root <svg> element
     const outputSvgContent = `
-    <svg xmlns="http://www.w3.org/2000/svg">
+    <svg xmlns="http://www.w3.org/2000/svg" height="6000" width="6000">
         ${combinedSvgContent}
     </svg>
     `;
