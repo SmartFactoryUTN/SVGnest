@@ -251,20 +251,25 @@ async function waitForValueChange(page, selectors, iterationCount, timeout, effi
         return (new Promise((resolve, reject) => {
             const info_iterations = document.querySelector(selectors.info_iterations);
             const info_efficiency = document.querySelector(selectors.info_efficiency);
-            const info_progress = document.querySelector(selectors.info_progress);
             const info_placed = document.querySelector(selectors.info_placed);
+
+            // Ensure elements are available
+            if (!info_iterations || !info_efficiency || !info_placed) {
+                console.error('Required elements not found in the DOM');
+                return reject(new Error('DOM elements not found'));
+            }
 
             console.log(`Parts placed: ${info_placed.textContent}`);
 
             const observer = new MutationObserver(() => {
 
-                if (info_iterations.textContent === targetValue) {
+                if (parseFloat(info_iterations.textContent) === parseFloat(targetValue)) {
                     console.log('Max iterations reached!')
                     observer.disconnect();
                     resolve();
                 }
 
-                if (efficiency >= info_efficiency.textContent) {
+                if (parseFloat(efficiency) >= parseFloat(info_efficiency.textContent)) {
                     console.log('Efficiency threshold reached!');
                     console.log(`Efficiency limit: ${efficiency}`);
                     console.log(`Efficiency reached: ${info_efficiency.textContent}`);
@@ -273,10 +278,12 @@ async function waitForValueChange(page, selectors, iterationCount, timeout, effi
                 }
             });
             observer.observe(info_iterations, {childList: true});
+            observer.observe(info_efficiency, { childList: true });
             if (timeout) {
                 setTimeout(() => {
                     observer.disconnect();
-                    reject(new Error(`Timeout waiting for value change in ${selectors.info_iterations} or ${selectors.info_efficiency}`));
+                    reject(new Error(`Timeout waiting for value change in ${selectors.info_iterations}: ${info_iterations} ${info_iterations.textContent} or ${selectors.info_efficiency}: ${info_efficiency} ${info_efficiency.textContent}`));
+                    reject(new Error(`Timeout waiting for value change in ${selectors.info_iterations}: ${info_iterations} ${parseFloat(info_iterations.textContent)} or ${selectors.info_efficiency}: ${info_efficiency} ${parseFloat(info_efficiency.textContent)}`));
                 }, timeout)
             }
         }))
