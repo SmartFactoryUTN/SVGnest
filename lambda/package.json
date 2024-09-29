@@ -13,6 +13,8 @@
   "dependencies": {
     "@sparticuz/chromium": "123.0.0",
     "aws-sdk": "^2.1682.0",
+    "axios": "^1.7.7",
+    "axios-retry": "^4.5.0",
     "puppeteer-core": "^19.6.3",
     "winston": "^3.14.2"
   },
