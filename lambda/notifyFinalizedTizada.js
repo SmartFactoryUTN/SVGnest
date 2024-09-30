@@ -1,20 +1,6 @@
-async function notifyFinalizedTizada(event, result){
+async function notifyFinalizedTizada(event, result, data){
     const axios = require('axios');
-    const axiosRetry = require('axios-retry');
     const config = require('config');
-
-    // Enable retry functionality with axios-retry
-    axiosRetry(axios, {
-        retries: 3, // Number of retry attempts
-        retryDelay: (retryCount) => {
-            console.log(`Retry attempt: ${retryCount}`);
-            return retryCount * 2000; // Delay between retries (2 seconds)
-        },
-        retryCondition: (error) => {
-            // Retry on network errors or if there is no response (e.g., timeout)
-            return axiosRetry.isNetworkOrIdempotentRequestError(error) || error.code === 'ECONNABORTED';
-        }
-    });
 
     const url = config.smartfactoryApiUrl;
 
@@ -22,7 +8,7 @@ async function notifyFinalizedTizada(event, result){
 
     const payload = {
         tizadaUUID: event.tizadaUUID,
-        url: event.url,
+        url: data.location,
         userUUID: event.user,
         configuration: {
             id: 1
@@ -41,7 +27,7 @@ async function notifyFinalizedTizada(event, result){
     };
 
     try {
-        const response = await axios.post(url, payload);
+        const response = await axios.post(url + '/api/tizada/notification', payload);
         console.log('Response:', response.data);
         return response.data;
     } catch (error) {

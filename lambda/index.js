@@ -84,11 +84,11 @@ exports.handler = async (event, context, callback) => {
             return localStorage.getItem('svgOutput');
         });
 
-        await uploadSVGToS3(config.bucketName, output, path, fs, AWS);
+        const data = await uploadSVGToS3(config.bucketName, output, path, fs, AWS);
         console.log(`Execution completed, sending notification to user...`);
 
         if (config.notifyFinalizerTizada === "true"){
-            await notifyFinalizedTizada(event, result);
+            await notifyFinalizedTizada(event, result, data);
             console.log("Notified tizada finalizada");
         }else{
             console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
