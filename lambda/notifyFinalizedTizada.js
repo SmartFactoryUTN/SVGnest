@@ -8,18 +8,8 @@ async function notifyFinalizedTizada(event, result, data){
 
     const payload = {
         tizadaUUID: event.tizadaUUID,
-        url: data.location,
+        url: data.Location,
         userUUID: event.user,
-        configuration: {
-            id: 1
-        },
-        bin: {
-            uuid: event.bin.uuid,
-            name: "Mesa de corte",
-            height: 10,
-            width: 10,
-            area: 100.0
-        },
         parts: parts,
         materialUtilization: result.efficiency,
         iterations: result.iterations,
@@ -27,6 +17,7 @@ async function notifyFinalizedTizada(event, result, data){
     };
 
     try {
+        console.log('Trying with this body:', payload)
         const response = await axios.post(url + '/api/tizada/notification', payload);
         console.log('Response:', response.data);
         return response.data;
