@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const winston = require('winston');
 const AWS = require('aws-sdk');
+const {notifyFinalizedTizada} = require("./notifyFinalizedTizada");
 
 
 exports.handler = async (event, context, callback) => {
@@ -73,7 +74,8 @@ exports.handler = async (event, context, callback) => {
         const startButton = await page.waitForSelector('#start');
         await startButton.click();
 
-        await waitForValueChange(page, selectors, iterationCount, timeout, efficiency);
+        const result = await waitForValueChange(page, selectors, iterationCount, timeout, efficiency);
+        console.log("Execution results: ", JSON.stringify(result));
 
         const sendButton = await page.waitForSelector('#sendresult');
         await sendButton.click();
@@ -82,8 +84,15 @@ exports.handler = async (event, context, callback) => {
             return localStorage.getItem('svgOutput');
         });
 
-        await uploadSVGToS3(config.bucketName, output, path, fs, AWS);
+        const data = await uploadSVGToS3(config.bucketName, output, path, fs, AWS);
         console.log(`Execution completed, sending notification to user...`);
+
+        if (config.notifyFinalizerTizada === "true"){
+            await notifyFinalizedTizada(event, result, data);
+            console.log("Notified tizada finalizada");
+        }else{
+            console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
+        }
 
     } catch (error) {
         logger.info("Error occurred");
