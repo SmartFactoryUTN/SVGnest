@@ -5,16 +5,27 @@ async function notifyFinalizedTizada(event, result, data){
     const url = config.smartfactoryApiUrl;
 
     const parts = event.parts.map(part => part.uuid);
+    let payload;
 
-    const payload = {
-        tizadaUUID: event.tizadaUUID,
-        url: data.Location,
-        userUUID: event.user,
-        parts: parts,
-        materialUtilization: result.efficiency,
-        iterations: result.iterations,
-        timeoutReached: false
-    };
+    if (result){
+        payload = {
+            tizadaUUID: event.tizadaUUID,
+            url: data.Location,
+            userUUID: event.user,
+            parts: parts,
+            materialUtilization: result.efficiency,
+            iterations: result.iterations,
+            timeoutReached: false,
+            status: "success"
+        };
+    }else{
+        payload = {
+            tizadaUUID: event.tizadaUUID,
+            userUUID: event.user,
+            status: "error"
+        }
+    }
+
 
     try {
         console.log('Trying with this body:', payload)

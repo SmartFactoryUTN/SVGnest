@@ -6,7 +6,6 @@ const winston = require('winston');
 const AWS = require('aws-sdk');
 const {notifyFinalizedTizada} = require("./notifyFinalizedTizada");
 
-
 exports.handler = async (event, context, callback) => {
 
     console.log(`Lambda triggered\n`);
@@ -97,6 +96,14 @@ exports.handler = async (event, context, callback) => {
     } catch (error) {
         logger.info("Error occurred");
         logger.info(error.message);
+
+        if (config.notifyFinalizerTizada === "true"){
+            await notifyFinalizedTizada(event, null, null);
+            console.log("Notified tizada finalizada with error");
+        }else{
+            console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
+        }
+
         return error;
     } finally {
         if (browser){
