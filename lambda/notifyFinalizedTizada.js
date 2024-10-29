@@ -28,8 +28,41 @@ async function notifyFinalizedTizada(event, result, data){
 
 
     try {
+
+        // Auth0 token endpoint and credentials
+        const tokenEndpoint = `https://${event.secrets.AUTH0_DOMAIN}/oauth/token`;
+        const clientId = event.secrets.CLIENT_ID;
+        const clientSecret = event.secrets.CLIENT_SECRET;
+        const audience = event.secrets.API_AUDIENCE;
+
+        // Generate an access token
+        const tokenResponse = await fetch(tokenEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                client_id: clientId,
+                client_secret: clientSecret,
+                audience: audience,
+                grant_type: 'client_credentials',
+            }),
+        });
+
+        if (!tokenResponse.ok) {
+            throw new Error(`Failed to obtain access token: ${tokenResponse.statusText}`);
+        }
+
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+
+        const config = {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        };
+
+
         console.log('Trying with this body:', payload)
-        const response = await axios.post(url + '/api/tizada/notification', payload);
+        const response = await axios.post(url + '/api/tizada/notification', payload, config);
         console.log('Response:', response.data);
         return response.data;
     } catch (error) {

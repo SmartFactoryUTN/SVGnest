@@ -2,22 +2,21 @@ async function buildSVGPart(userIdentifier, parts, isBin) {
 
     const svgFiles = parts.map(part => {
 
-        let key;
-
         if (isBin){
-            key = `${userIdentifier}/containers/${part.uuid}.svg`;
+            console.log("KEY!!!", `users/${userIdentifier}/containers/${part.uuid}.svg`);
         }else{
-            key = `${userIdentifier}/moldes/${part.uuid}.svg`;
+            console.log("KEY!!!", `users/${userIdentifier}/moldes/${part.uuid}.svg`);
         }
 
         return {
             bucket: process.env.AWS_S3_BUCKET_NAME || "servicio-de-tizada",
-            key: key,
+            key: isBin? `users/${userIdentifier}/containers/${part.uuid}.svg` : `users/${userIdentifier}/moldes/${part.uuid}.svg`,
             count: part.quantity
         };
     });
 
     try {
+
         return await combineSvgs(svgFiles);
     } catch (error) {
         console.error(`Error trying to combine SVG: ${error.message}`);
