@@ -1,6 +1,5 @@
-async function notifyFinalizedTizada(event, result, data){
+async function notifyFinalizedTizada(event, result, data, config){
     const axios = require('axios');
-    const config = require('config');
 
     const url = config.smartfactoryApiUrl;
 
@@ -26,14 +25,13 @@ async function notifyFinalizedTizada(event, result, data){
         }
     }
 
-
     try {
 
         // Auth0 token endpoint and credentials
-        const tokenEndpoint = `https://${event.secrets.AUTH0_DOMAIN}/oauth/token`;
-        const clientId = event.secrets.CLIENT_ID;
-        const clientSecret = event.secrets.CLIENT_SECRET;
-        const audience = event.secrets.API_AUDIENCE;
+        const tokenEndpoint = `https://${config.auth0Domain}/oauth/token`;
+        const clientId = config.auth0ClientId;
+        const clientSecret = config.auth0ClientSecret;
+        const audience = config.auth0ApiAudience;
 
         // Generate an access token
         const tokenResponse = await fetch(tokenEndpoint, {

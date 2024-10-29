@@ -87,7 +87,7 @@ exports.handler = async (event, context, callback) => {
         console.log(`Execution completed, sending notification to user...`);
 
         if (config.notifyFinalizerTizada === "true"){
-            await notifyFinalizedTizada(event, result, data);
+            await notifyFinalizedTizada(event, result, data, config);
             console.log("Notified tizada finalizada");
         }else{
             console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
@@ -98,7 +98,7 @@ exports.handler = async (event, context, callback) => {
         logger.info(error.message);
 
         if (config.notifyFinalizerTizada === "true"){
-            await notifyFinalizedTizada(event, null, null);
+            await notifyFinalizedTizada(event, null, null, config);
             console.log("Notified tizada finalizada with error");
         }else{
             console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
