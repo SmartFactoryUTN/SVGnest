@@ -54,13 +54,13 @@ async function notifyFinalizedTizada(event, result, data, config){
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
 
-        const config = {
+        const headers = {
             headers: { Authorization: `Bearer ${accessToken}` }
         };
 
 
         console.log('Trying with this body:', payload)
-        const response = await axios.post(url + '/api/tizada/notification', payload, config);
+        const response = await axios.post(url + '/api/tizada/notification', payload, headers);
         console.log('Response:', response.data);
         return response.data;
     } catch (error) {
