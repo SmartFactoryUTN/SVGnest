@@ -83,7 +83,7 @@ exports.handler = async (event, context, callback) => {
             return localStorage.getItem('svgOutput');
         });
 
-        const data = await uploadSVGToS3(config.bucketName, output, path, fs, AWS);
+        const data = await uploadSVGToS3(config.bucketName, output, path, fs, AWS, event.user);
         console.log(`Execution completed, sending notification to user...`);
 
         if (config.notifyFinalizerTizada === "true"){

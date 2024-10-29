@@ -1,10 +1,10 @@
-async function uploadSVGToS3(bucketName, svgOutput, path, fs, AWS) {
+async function uploadSVGToS3(bucketName, svgOutput, path, fs, AWS, userIdentifier) {
 
     let {randomUUID} = await import('crypto');
 
     try {
         const s3 = new AWS.S3({apiVersion: "2006-03-01"});
-        const keyPrefix = 'result/' + randomUUID() + '/'; // Optional: specify a folder in the bucket
+        const keyPrefix = 'users/' + userIdentifier + '/tizadas/' + randomUUID() + '/';
 
         const tmpPath = path.join('/tmp', '/tizada');
         fs.mkdirSync(tmpPath, {recursive: true});
