@@ -11,8 +11,8 @@ async function initialSetup(payload, path, fs) {
 
     const jsonObject = JSON.parse(jsonString);
 
-    const svgBin = await buildSVGPart(payload.user, [payload.bin]) || jsonObject.svgBin;
-    const svgParts = await buildSVGPart(payload.user, payload.parts) || jsonObject.svgParts;
+    const svgBin = await buildSVGPart(payload.user, [payload.bin], true) || jsonObject.svgBin;
+    const svgParts = await buildSVGPart(payload.user, payload.parts, false) || jsonObject.svgParts;
     const {maxIterations, materialUtilization, timeout} = payload.configuration;
     const iterationCount = maxIterations || jsonObject.iterationCount;
     const efficiency = materialUtilization || jsonObject.efficiency;

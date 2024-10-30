@@ -6,7 +6,6 @@ const winston = require('winston');
 const AWS = require('aws-sdk');
 const {notifyFinalizedTizada} = require("./notifyFinalizedTizada");
 
-
 exports.handler = async (event, context, callback) => {
 
     console.log(`Lambda triggered\n`);
@@ -84,11 +83,11 @@ exports.handler = async (event, context, callback) => {
             return localStorage.getItem('svgOutput');
         });
 
-        const data = await uploadSVGToS3(config.bucketName, output, path, fs, AWS);
+        const data = await uploadSVGToS3(config.bucketName, output, path, fs, AWS, event.user);
         console.log(`Execution completed, sending notification to user...`);
 
         if (config.notifyFinalizerTizada === "true"){
-            await notifyFinalizedTizada(event, result, data);
+            await notifyFinalizedTizada(event, result, data, config);
             console.log("Notified tizada finalizada");
         }else{
             console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
@@ -97,6 +96,14 @@ exports.handler = async (event, context, callback) => {
     } catch (error) {
         logger.info("Error occurred");
         logger.info(error.message);
+
+        if (config.notifyFinalizerTizada === "true"){
+            await notifyFinalizedTizada(event, null, null, config);
+            console.log("Notified tizada finalizada with error");
+        }else{
+            console.log("Notification disabled", JSON.stringify(config.notifyFinalizerTizada));
+        }
+
         return error;
     } finally {
         if (browser){
