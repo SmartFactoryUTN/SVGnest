@@ -73,6 +73,12 @@ exports.handler = async (event, context, callback) => {
         const startButton = await page.waitForSelector('#start');
         await startButton.click();
 
+        console.log("Timeout enviado:", timeout)
+        console.log("IterationCount enviado:", iterationCount)
+        console.log("Efficiency enviado:", efficiency)
+        console.log("Context:", context)
+        console.log("Event:", event)
+
         const result = await waitForValueChange(page, selectors, iterationCount, timeout, efficiency);
         console.log("Execution results: ", JSON.stringify(result));
 
