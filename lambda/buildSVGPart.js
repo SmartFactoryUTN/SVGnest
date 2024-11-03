@@ -11,7 +11,9 @@ async function buildSVGPart(userIdentifier, parts, isBin) {
         return {
             bucket: process.env.AWS_S3_BUCKET_NAME || "servicio-de-tizada",
             key: isBin? `users/${userIdentifier}/containers/${part.uuid}.svg` : `users/${userIdentifier}/moldes/${part.uuid}.svg`,
-            count: part.quantity
+            count: part.quantity,
+            height: part.height || 3000,
+            width: part.width || 3000
         };
     });
 
@@ -46,7 +48,13 @@ async function combineSvgs(svgFiles) {
 
     // Create the combined SVG content with one root <svg> element
     const outputSvgContent = `
-    <svg xmlns="http://www.w3.org/2000/svg" height="3000" width="3000" viewBox="0 0 3000 3000" style="background-color:white">
+    <svg 
+        xmlns="http://www.w3.org/2000/svg"
+        height="${svgFiles[0].height}"
+        width="${svgFiles[0].width}"
+        viewBox="0 0 ${svgFiles[0].width} ${svgFiles[0].height}"
+        style="background-color:white;"
+    >
         ${combinedSvgContent}
     </svg>
     `;
