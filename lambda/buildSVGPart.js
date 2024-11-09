@@ -1,19 +1,13 @@
-async function buildSVGPart(userIdentifier, parts, isBin) {
+async function buildSVGPart(userIdentifier, parts, isBin, size) {
 
     const svgFiles = parts.map(part => {
-
-        if (isBin){
-            console.log("KEY!!!", `users/${userIdentifier}/containers/${part.uuid}.svg`);
-        }else{
-            console.log("KEY!!!", `users/${userIdentifier}/moldes/${part.uuid}.svg`);
-        }
 
         return {
             bucket: process.env.AWS_S3_BUCKET_NAME || "servicio-de-tizada",
             key: isBin? `users/${userIdentifier}/containers/${part.uuid}.svg` : `users/${userIdentifier}/moldes/${part.uuid}.svg`,
             count: part.quantity,
-            height: part.height || 3000,
-            width: part.width || 3000
+            height: size.height,
+            width: size.width
         };
     });
 
@@ -26,9 +20,11 @@ async function buildSVGPart(userIdentifier, parts, isBin) {
 
 }
 
-// Fetch SVG files, repeat them based on count, and combine
 async function combineSvgs(svgFiles) {
     let combinedSvgContent = '';
+    let currentY = 0;  // Initial Y position for rows
+    let currentX = 0;  // Initial X position for columns
+    const separation = 1800;  // Separation between shapes in the grid in pixels
 
     for (const [index, svgFile] of svgFiles.entries()) {
         try {
@@ -36,9 +32,23 @@ async function combineSvgs(svgFiles) {
             const uniquePrefix = `file${index + 1}`;
             const sanitizedContent = sanitizeSvgContent(svgContent, uniquePrefix);
 
-            // Repeat the SVG content based on the count
+            // Repeat SVG content based on count with translation adjustments
             for (let i = 0; i < svgFile.count; i++) {
-                combinedSvgContent += `${sanitizedContent}\n`;
+                // Apply translation to the shape with specified separation
+                const transformedContent = sanitizedContent.replace(
+                    /(<(rect|circle|ellipse|polygon|polyline|path)[^>]*>)/,
+                    `$1 transform="translate(${currentX}, ${currentY})"`
+                );
+
+                combinedSvgContent += `${transformedContent}\n`;
+
+                // Update currentX for the next shape in the row
+                currentX += separation;
+                if (currentX >= separation * 4) {  // Adjust to fit the number of columns you want
+                    // Move to a new row after reaching column limit
+                    currentX = 0;
+                    currentY += separation;
+                }
             }
         } catch (error) {
             console.log(JSON.stringify(error));
@@ -50,9 +60,9 @@ async function combineSvgs(svgFiles) {
     const outputSvgContent = `
     <svg 
         xmlns="http://www.w3.org/2000/svg"
-        height="${svgFiles[0].height}"
-        width="${svgFiles[0].width}"
-        viewBox="0 0 ${svgFiles[0].width} ${svgFiles[0].height}"
+        height="${currentY + separation}"
+        width="${separation * 4}"
+        viewBox="0 0 ${separation * 4} ${currentY + separation}"
         style="background-color:white;"
     >
         ${combinedSvgContent}
