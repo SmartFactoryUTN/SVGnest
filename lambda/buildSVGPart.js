@@ -24,7 +24,7 @@ async function combineSvgs(svgFiles) {
     let combinedSvgContent = '';
     let currentY = 0;  // Initial Y position for rows
     let currentX = 0;  // Initial X position for columns
-    const separation = 1800;  // Separation between shapes in the grid in pixels
+    const separation = 2800;  // Separation between shapes in the grid
 
     for (const [index, svgFile] of svgFiles.entries()) {
         try {
@@ -34,10 +34,10 @@ async function combineSvgs(svgFiles) {
 
             // Repeat SVG content based on count with translation adjustments
             for (let i = 0; i < svgFile.count; i++) {
-                // Apply translation to the shape with specified separation
+                // Adjust regex to insert transform directly in the opening tag
                 const transformedContent = sanitizedContent.replace(
-                    /(<(rect|circle|ellipse|polygon|polyline|path)[^>]*>)/,
-                    `$1 transform="translate(${currentX}, ${currentY})"`
+                    /<(rect|circle|ellipse|polygon|polyline|path)([^>]*)>/,
+                    `<$1$2 transform="translate(${currentX}, ${currentY})">`
                 );
 
                 combinedSvgContent += `${transformedContent}\n`;
