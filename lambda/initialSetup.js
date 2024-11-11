@@ -11,8 +11,8 @@ async function initialSetup(payload, path, fs) {
 
     const jsonObject = JSON.parse(jsonString);
 
-    const svgBin = await buildSVGPart(payload.user, [payload.bin], true) || jsonObject.svgBin;
-    const svgParts = await buildSVGPart(payload.user, payload.parts, false) || jsonObject.svgParts;
+    const svgBin = await buildSVGPart(payload.user, [payload.bin], true, {height: payload.bin.height, width: payload.bin.width}) || jsonObject.svgBin;
+    const svgParts = await buildSVGPart(payload.user, payload.parts, false, {height: payload.bin.height, width: payload.bin.width}) || jsonObject.svgParts;
     const {maxIterations, materialUtilization, timeout} = payload.configuration;
     const iterationCount = maxIterations || jsonObject.iterationCount;
     const efficiency = materialUtilization || jsonObject.efficiency;
@@ -24,7 +24,6 @@ async function initialSetup(payload, path, fs) {
         info_progress: "#info_progress",
     };
 
-    // temporary directory to write bin and parts in order to send path to uploadFile(): TODO find a cleaner way to do it
     const tmpPath = path.join('/tmp', '/tizada');
     fs.mkdirSync(tmpPath, {recursive: true});
     fs.writeFileSync(path.join(tmpPath, 'bin.svg'), svgBin, 'utf-8');
