@@ -24,7 +24,7 @@ async function combineSvgs(svgFiles) {
     let combinedSvgContent = '';
     let currentY = 0;  // Initial Y position for rows
     let currentX = 0;  // Initial X position for columns
-    const separation = 2800;  // Separation between shapes in the grid
+    const separation = 4500;  // Separation between shapes in the grid
 
     for (const [index, svgFile] of svgFiles.entries()) {
         try {
@@ -44,7 +44,7 @@ async function combineSvgs(svgFiles) {
 
                 // Update currentX for the next shape in the row
                 currentX += separation;
-                if (currentX >= separation * 4) {  // Adjust to fit the number of columns you want
+                if (currentX >= separation * 5) {  // Adjust to fit the number of columns you want
                     // Move to a new row after reaching column limit
                     currentX = 0;
                     currentY += separation;
